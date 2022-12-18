@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.1 15.6">
+  <defs>
+    <style>
+      .a {
+        fill: #69d645;
+      }
+
+      .b {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: 2px;
+      }
+    </style>
+  </defs>
+  <title>green-done</title>
+  <g>
+    <ellipse class="a" cx="9.05" cy="7.8" rx="9.05" ry="7.8"/>
+    <polyline class="b" points="14.04 5.07 7.7 10.53 4.06 7.2"/>
+  </g>
+</svg>

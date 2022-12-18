@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.1 18.1">
+  <defs>
+    <style>
+      .a {
+        fill: #ef6262;
+      }
+
+      .b {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+    </style>
+  </defs>
+  <title>red-delete</title>
+  <g>
+    <circle class="a" cx="9.05" cy="9.05" r="9.05"/>
+    <g>
+      <line class="b" x1="12.16" y1="5.94" x2="5.94" y2="12.16"/>
+      <line class="b" x1="5.94" y1="5.94" x2="12.16" y2="12.16"/>
+    </g>
+  </g>
+</svg>

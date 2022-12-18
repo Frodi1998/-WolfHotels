@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21.2 21.2">
+  <defs>
+    <style>
+      .a {
+        fill: #69d645;
+      }
+
+      .b {
+        fill: none;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+    </style>
+  </defs>
+  <title>green-add</title>
+  <g>
+    <circle class="a" cx="10.6" cy="10.6" r="10.6"/>
+    <g>
+      <line class="b" x1="15.75" y1="10.6" x2="5.45" y2="10.6"/>
+      <line class="b" x1="10.6" y1="5.45" x2="10.6" y2="15.75"/>
+    </g>
+  </g>
+</svg>
