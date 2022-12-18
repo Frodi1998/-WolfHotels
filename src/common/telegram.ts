@@ -9,8 +9,9 @@ type ContextFlaver = {
 }
 
 type SessionData = ScenesSessionFlavor & {
-    // Your own global session interface, could be empty as well.
-  }
+  isInit?: boolean
+  // Your own global session interface, could be empty as well.
+}
 
 
 export type BotContext = Context & SessionFlavor<SessionData> & ScenesFlavor & IContext & ContextFlaver & IContext & ContextFlaver;

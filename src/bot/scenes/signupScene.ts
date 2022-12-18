@@ -17,7 +17,9 @@ signupScene.use(async (context, next) => {
 })
 
 signupScene.do(async (ctx) => {
-  await ctx.reply(`Здравствуйте!\nВведите пожалуйста свое имя.`)
+  await ctx.reply(`<b>👋 Здравствуйте!</b>\n<i>👉 Введите пожалуйста свое имя , чтобы пройти регистрацию.</i>`, {
+    parse_mode: "HTML"
+  })
 })
 
 signupScene.wait().on("message:text", async (ctx) => {
@@ -25,16 +27,19 @@ signupScene.wait().on("message:text", async (ctx) => {
 
   // здесь создается запись в базе даных и дальше уже пользователь может задавать вопросы
   const text = stripIndent`
-    ☀️ Добрый день, ${name}!
+    <b>☀️ Приветствую,</b> <code>${name}</code>!
     ➖➖➖➖➖➖➖➖
-    ℹ️ Я - бот-помощник нашего сайта "Wolf Hotels"
+    <i>ℹ️ Я - бот-помощник нашего сайта</i> <a href="http://79.137.196.10:7777/wolf-hotels.ru/index.html">"Wolf Hotels"</a>
     ❔ Если у вас есть какие-то вопросы, вы можете задать их мне в этом чате или выбрать список интересующих вас вопросов на инлайн-клавиатуре.
   `
 
   
-  await ctx.reply(text)
+  await ctx.reply(text, {
+    parse_mode: "HTML"
+  })
   const user = await userService.create({uid: ctx.from!.id!, name, isAdmin: ctx.scene.session.isAdmin})
 
   console.log(`new user: `, user)
-  ctx.scene.resume();
+  // ctx.scene.resume();
+  ctx.scene.exit()
 })

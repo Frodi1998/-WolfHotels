@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  const answer = await prisma.answer.upsert({
+  const toBook = await prisma.answer.upsert({
     where: {command: 'забронировать'},
     update: {},
     create: {
@@ -10,13 +10,32 @@ async function main() {
       questions: {createMany: {
         data: [
           {alias: 'как я могу забронировать номер'},
-          {alias: 'я бы хотел забронировать'},
+          {alias: 'я бы хотел забронировать отель'},
           {alias: 'помогите забронировать номер'},
         ]
       }}
     }
   })
-  console.log({ answer })
+
+  const toDiscount = await prisma.answer.upsert({
+    where: {command: 'скидка'},
+    update: {},
+    create: {
+      command: 'скидка',
+      questions: {createMany: {
+        data: [
+          {alias: 'могу ли я получить свою персональную скидку'},
+          {alias: 'я бы хотел получить скидку'},
+          {alias: 'скидки'},
+          {alias: 'есть ли у вас скидки?'},
+          {alias: 'как я могу получить скидку?'},
+          {alias: 'можно ли у вас получить скидку?'},
+        ]
+      }}
+    }
+  })
+  
+  console.log({ answer: toBook })
 }
 
 main()

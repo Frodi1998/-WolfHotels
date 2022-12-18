@@ -1,31 +1,25 @@
 import { Handler, IHandlerParams } from 'commander-core';
-import path, { dirname } from 'path';
-// import { fileURLToPath } from 'url';
+import { stripIndent } from 'common-tags';
+import { InlineKeyboard } from 'grammy';
+import path from 'path';
+import { FALLBACK_BUTTONS } from '../../common/buttons.js';
+import { BotContext } from '../../common/telegram.js';
+import { prisma } from '../../db/index.js';
 
-// import { ExtendedCallbackContext, ExtendedMessageContext } from '../../common/vk';
-// import { ADMIN_MENU_BUTTONS, MAIN_MENU_BUTTONS } from '../../common/buttons.js';
-// import { CustomCommand } from './helpers';
 import { Utils } from './utils.js';
-// import { ErrorManager } from '../../common/error';
-// import { MAIN_MENU } from '../../common/text';
-// import { MessageContext, MessageEventContext } from 'vk-io';
 
-// const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// interface IListener {
-//   context: ExtendedMessageContext | ExtendedCallbackContext;
-//   utils: Utils;
-//   error: Error;
-// }
+interface IListener {
+  context: BotContext;
+  utils: Utils;
+  error: Error;
+}
 
 class HandlerClient extends Handler {
-  // private readonly errorManager = ErrorManager.instance;
 
   public static useFactory() {
     const params: IHandlerParams = {
       commands: {
         directory: path.join(__dirname, '..', 'commands'),
-        // directory: path.resolve('src', 'bot', 'commands'),
       },
       strictLoader: true,
       utils: Utils.instance,
@@ -42,94 +36,52 @@ class HandlerClient extends Handler {
       .catch(console.error);
   }
 
-  // public get middleware() {
-  //   return async (context: ExtendedMessageContext, next: () => Promise<void>) => {
-  //     const { messagePayload } = context;
-
-  //     if (messagePayload?.cmd || context.text) {
-  //       context.$command = messagePayload?.cmd ? (messagePayload.cmd as string) : context.text!;
-  //       await this.execute(context);
-  //     }
-
-  //     return next();
-  //   };
-  // }
-
-  // public get callbackMiddleware() {
-  //   return async (context: ExtendedCallbackContext, next: () => Promise<void>) => {
-  //     const { eventPayload } = context;
-
-  //     if (eventPayload?.cmd) {
-  //       context.$command = eventPayload?.cmd as string;
-  //       await this.execute(context);
-  //     }
-
-  //     return next();
-  //   };
-  // }
-
   private loadEventListeners(): void {
-    // this.events.on('command_begin', this.onBegin);
-    // this.events.on('command_not_found', this.onFallback);
-    // this.events.on('command_job', this.onJob);
-    // this.events.on('command_error', this.onError);
-    // this.events.on('command_ready', this.onReady);
-
+    this.events.on('command_not_found', this.onFallback);
+    this.events.on('command_error', this.onError);
+    
     console.log('event listeners loaded');
   }
 
-  // private get onBegin() {
-  //   return async ({ context }: IListener) => {
-  //     if (!context.$command) {
-  //       context.$command = context.text;
-  //     }
+  private get onFallback() {
+    return async ({ context }: IListener) => {
+      if(!context.session.isInit) {
+        const alias = context.$command!;
 
-  //     context.$command = context.$command!.trim();
-  //   };
-  // }
+        const question = await prisma.question.findFirst({
+          where: { alias: { contains: alias } }, 
+          include: {answer: true },
+        })
 
-  // private get onFallback() {
-  //   return ({ context }: IListener) => {
-  //     if (context instanceof MessageEventContext) {
-  //       return;
-  //     }
+        if(!question) {
+          context.session.isInit = false;
+          const text = stripIndent`
+            <b>😔 Я вас не понимаю.
+            Попробуйте повторить попытку, переформулировав вопрос.</b>
+            ☎️ Вам нужна помощь оператора в решении проблемы?
+          `;
+          
+          return context.reply(text, {
+            reply_markup: FALLBACK_BUTTONS,
+            parse_mode: "HTML"
+          })
+        } 
 
-  //     if (!context.isChat) {
-  //       return this.showMenu(context);
-  //     }
-  //   };
-  // }
+        context.session.isInit = true;
+        context.$command = question?.answer?.command;
+        return this.execute(context);
+      }
+      
+      console.log('warn: fallback is called');
+      context.session.isInit = false;
+    };
+  }
 
-  // private get onJob() {
-  //   return ({ context, utils }: IListener) => {
-  //     const command = utils.getCommand as CustomCommand;
-  //     const hasAccess = command instanceof CustomCommand && command.hasAccess(context);
-  //     const isMessageContext = context instanceof MessageContext;
-
-  //     if (!hasAccess) {
-  //       utils.setCommandStatus('ready');
-  //     }
-
-  //     if (isMessageContext && !hasAccess) {
-  //       this.showMenu(context);
-  //     }
-  //   };
-  // }
-
-  // private get onError() {
-  //   return async ({ context, error }: IListener) => {
-  //     if (context instanceof MessageEventContext) {
-  //       return;
-  //     }
-
-  //     return this.errorManager.handle(context, error);
-  //   };
-  // }
-
-  // private showMenu(context: ExtendedMessageContext) {
-  //   const keyboard = context.isAdmin ? ADMIN_MENU_BUTTONS : MAIN_MENU_BUTTONS;
-  //   return context.send(MAIN_MENU, { keyboard });
-  // }
+  private get onError() {
+    return async ({ error }: IListener) => {
+      throw error
+    }
+  }
 }
 
 export const handler = HandlerClient.useFactory();
