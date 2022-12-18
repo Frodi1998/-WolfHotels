@@ -1,0 +1,1 @@
+export const SIGNUP_SCENE_SLUG = 'signup';
