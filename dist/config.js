@@ -34,4 +34,3 @@ exports.config = {
 function getJson(key) {
     return JSON.parse(process.env[key]);
 }
-//# sourceMappingURL=config.js.map

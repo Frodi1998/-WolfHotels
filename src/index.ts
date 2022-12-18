@@ -3,7 +3,7 @@ import {prisma} from './db';
 
 async function main() {
   await prisma.$connect();
-  bot.start().then(() => console.log('bot started'));
+  bot.start().then(() => console.log('bot started')).catch(err => console.log('тварь ошиблась'));
 }
 
 main()

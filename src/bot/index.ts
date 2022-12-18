@@ -11,7 +11,7 @@ import { scenes } from "./scenes/hand_scenes"
 import { SIGNUP_SCENE_SLUG } from '../common/text';
 import { prisma } from '../db';
 import { handler } from './handler';
-import { HELP_BUTTONS } from '../common/buttons';
+import { getAcceptRequestButton, HELP_BUTTONS } from '../common/buttons';
 
 export class BotClient {
   private readonly bot = new Bot(config.token);
@@ -21,10 +21,11 @@ export class BotClient {
     await Promise.all([
       this.handler.load(),
       this.loadMiddlewares(),
-      this.loadCommand()
+      // this.loadCommand()
     ]);
 
-    this.bot.start();
+    this.bot.start()
+    this.bot.catch(this.bot.errorHandler)
   }
 
   private async loadMiddlewares() {
@@ -39,83 +40,38 @@ export class BotClient {
 
     this.bot.on("message", this.onMessage);
     this.bot.on("message", this.onCommand);
-
     this.bot.on('callback_query:data', this.onCallback)
-    // this.bot.on("callback_query:data", async (ctx) => {
-    //   console.log(ctx.callbackQuery.data.indexOf('accept_request'));
-
-    //   if(ctx.callbackQuery.data == "more_help") {
-    //     return ctx.reply(`<b>ℹ️ Выберите интересующий вас вопрос на клавиатуре или напишите его в ручном режиме:</b>`, {
-    //       parse_mode: "HTML",
-    //       reply_markup: HELP_BUTTONS
-    //     })
-    //   } else if(ctx.callbackQuery.data == "operator") {
-    //     // const new_ticket = await prisma.dialog.upsert({
-    //     //   create: {
-
-    //     //   }
-    //     // })
-    //     const acceptRequest = new InlineKeyboard()
-    //     .text("✅ Принять запрос", `accept_request ${ctx.from.id}`).row()
-
-    //     await ctx.editMessageText(`<b>🔄 Переключаю вас на оператора.</b>\n<i>🕰 Время ожидания может варьироваться в зависимости от нагруженности.</i>`, {
-    //       parse_mode: "HTML"
-    //     })
-
-    //     await ctx.api.sendMessage(5269232648, `<b>📲 Поступил новый запрос в техническую поддержку.</b>`, {
-    //       reply_markup: acceptRequest,
-    //       parse_mode: "HTML"
-    //     })
-    //   } else if(ctx.callbackQuery.data.indexOf('accept_request') != -1) {
-    //     // console.log(ctx.callbackQuery.data.split('accept_request')[0])
-    //     console.log('Сработал запрос')
-    //     let id = ctx.callbackQuery.data.split('accept_request').join(',').trim()
-    //     console.log(`ID-шник пользователя: ${id}`)
-
-    //   }
-    //   await ctx.answerCallbackQuery(); // remove loading animation
-    // });
 
     console.log('middlewares loaded');
   }
 
-  private loadCommand() {
-    this.bot.command("start", (ctx) => ctx.reply("Welcome! Up and running."));
-  }
+  // private loadCommand() {
+  //   this.bot.command("start", (ctx) => ctx.reply("Welcome! Up and running."));
+  // }
 
   private get onCallback(): MiddlewareFn {
     return async (ctx: BotContext, next: NextFunction) => {
       console.log(ctx.callbackQuery!.data?.indexOf('accept_request'));
 
-      if(ctx.callbackQuery?.data == "more_help") {
-        return ctx.reply(`<b>ℹ️ Выберите интересующий вас вопрос на клавиатуре или напишите его в ручном режиме:</b>`, {
-          parse_mode: "HTML",
-          reply_markup: HELP_BUTTONS
-        })
-      } else if(ctx.callbackQuery?.data == "operator") {
-        // const new_ticket = await prisma.dialog.upsert({
-        //   create: {
+      ctx.$command = ctx.callbackQuery?.data;
+      await this.handler.execute(ctx);
 
-        //   }
-        // })
-        const acceptRequest = new InlineKeyboard()
-        .text("✅ Принять запрос", `accept_request ${ctx.from!.id}`).row()
+      // if(ctx.callbackQuery?.data == "more_help") {
+      //   ctx.$command = ctx.callbackQuery?.data;
+      //   this.handler.execute(ctx);
+      // }
+      
+      // if(ctx.callbackQuery?.data == "operator") {
+      //   ctx.$command = ctx.callbackQuery?.data;
+      //   this.handler.execute(ctx);
+      // }
+      
+      // if(ctx.callbackQuery!.data!.indexOf('accept_request') != -1) {
+      //   console.log('Сработал запрос')
+      //   let id = ctx.callbackQuery!.data!.split('accept_request').join(',').trim()
+      //   console.log(`ID-шник пользователя: ${id}`)
 
-        await ctx.editMessageText(`<b>🔄 Переключаю вас на оператора.</b>\n<i>🕰 Время ожидания может варьироваться в зависимости от нагруженности.</i>`, {
-          parse_mode: "HTML"
-        })
-
-        await ctx.api.sendMessage(5269232648, `<b>📲 Поступил новый запрос в техническую поддержку.</b>`, {
-          reply_markup: acceptRequest,
-          parse_mode: "HTML"
-        })
-      } else if(ctx.callbackQuery!.data!.indexOf('accept_request') != -1) {
-        // console.log(ctx.callbackQuery.data.split('accept_request')[0])
-        console.log('Сработал запрос')
-        let id = ctx.callbackQuery!.data!.split('accept_request').join(',').trim()
-        console.log(`ID-шник пользователя: ${id}`)
-
-      }
+      // }
       await ctx.answerCallbackQuery();
     }
   }
@@ -139,8 +95,8 @@ export class BotClient {
   private get onCommand(): MiddlewareFn {
     return async (context: BotContext, next: NextFunction) => {
       console.log('onCommand')
-      const alias = context.update.message?.text!;
-      context.$command = alias;
+      // const alias = context.update.message?.text!;
+      context.$command = context.update.message?.text!;
       await this.handler.execute(context);
 
       await next();

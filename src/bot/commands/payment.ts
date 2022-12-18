@@ -3,7 +3,7 @@ import { stripIndent } from 'common-tags';
 import { BotContext } from '../../common/telegram';
 
 export default new Command({
-  pattern: /^(?:[а-я\s\d]+)*(?:цен[аы]|оплат[аить]|стои[мость]|купить)(?:[а-я\s\d]+)*/i,
+  pattern: /^(?:[а-я\s\d]+)*(?:цена|оплатить|купить)(?:[а-я\s\d]+)*/i,
   name: 'цена',
   description: 'стоимость отеля',
 
